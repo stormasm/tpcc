@@ -233,12 +233,38 @@ public class TpccLoad implements TpccConstants {
 
             try {
                 stmt.execute("create table item (\n" +
-                        "i_id int PRIMARY KEY,\n" +
+                        "i_id int,\n" +
                         "i_im_id int,\n" +
                         "i_name string,\n" +
                         "i_price float,\n" +
-                        "i_data string\n" +
-                        ");");
+                        "i_data string,\n" +
+                        "PRIMARY KEY(i_id)\n" +
+                        ");\n");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.execute("create table stock (\n" +
+                        "    s_i_id int,\n" +
+                        "    s_w_id int,\n" +
+                        "    s_quantity int,\n" +
+                        "    s_dist_01 string,\n" +
+                        "    s_dist_02 string,\n" +
+                        "    s_dist_03 string,\n" +
+                        "    s_dist_04 string,\n" +
+                        "    s_dist_05 string,\n" +
+                        "    s_dist_06 string,\n" +
+                        "    s_dist_07 string,\n" +
+                        "    s_dist_08 string,\n" +
+                        "    s_dist_09 string,\n" +
+                        "    s_dist_10 string,\n" +
+                        "    s_ytd float,\n" +
+                        "    s_order_cnt int,\n" +
+                        "    s_remote_cnt int,\n" +
+                        "    s_data string,\n" +
+                        "    PRIMARY KEY(s_w_id, s_i_id) \n" +
+                        ") ;");
             } catch (SQLException e) {
                 throw new RuntimeException("Could not create items table", e);
             }
