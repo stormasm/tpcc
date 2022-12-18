@@ -193,7 +193,7 @@ public class TpccLoad implements TpccConstants {
             try {
                 Class.forName(javaDriver);
             } catch (ClassNotFoundException e1) {
-                throw new RuntimeException("Class for mysql error", e1);
+                throw new RuntimeException("Error getting class", e1);
             }
 
             Connection conn;
