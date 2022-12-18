@@ -335,6 +335,22 @@ public class TpccLoad implements TpccConstants {
             }
 
             try {
+                stmt.execute("create table history (\n" +
+                        "h_c_id int,\n" +
+                        "h_c_d_id int,\n" +
+                        "h_c_w_id int,\n" +
+                        "h_d_id int,\n" +
+                        "h_w_id int,\n" +
+                        "h_date timestamp,\n" +
+                        "h_amount float,\n" +
+                        "h_data varchar,\n" +
+                        "PRIMARY KEY(h_c_id, h_c_d_id, h_c_w_id, h_d_id, h_w_id)\n" +
+                        ");");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Could not close statement", e);
