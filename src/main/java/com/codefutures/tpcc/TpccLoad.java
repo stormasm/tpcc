@@ -270,6 +270,71 @@ public class TpccLoad implements TpccConstants {
             }
 
             try {
+                stmt.execute("create table district (\n" +
+                        "d_id int,\n" +
+                        "d_w_id int,\n" +
+                        "d_name string,\n" +
+                        "d_street_1 string,\n" +
+                        "d_street_2 string,\n" +
+                        "d_city string,\n" +
+                        "d_state string,\n" +
+                        "d_zip string,\n" +
+                        "d_tax float,\n" +
+                        "d_ytd float,\n" +
+                        "d_next_o_id int,\n" +
+                        "primary key (d_w_id, d_id)\n" +
+                        ");\n");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.execute("create table warehouse (\n" +
+                        "w_id int,\n" +
+                        "w_name string,\n" +
+                        "w_street_1 string,\n" +
+                        "w_street_2 string,\n" +
+                        "w_city string,\n" +
+                        "w_state string,\n" +
+                        "w_zip string,\n" +
+                        "w_tax float,\n" +
+                        "w_ytd float,\n" +
+                        "primary key (w_id)\n" +
+                        ");\n");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.execute("create table customer (\n" +
+                        "c_id int,\n" +
+                        "c_d_id int,\n" +
+                        "c_w_id int,\n" +
+                        "c_first string,\n" +
+                        "c_middle string,\n" +
+                        "c_last string,\n" +
+                        "c_street_1 string,\n" +
+                        "c_street_2 string,\n" +
+                        "c_city string,\n" +
+                        "c_state string,\n" +
+                        "c_zip string,\n" +
+                        "c_phone string,\n" +
+                        "c_since datetime,\n" +
+                        "c_credit string,\n" +
+                        "c_credit_lim int,\n" +
+                        "c_discount float,\n" +
+                        "c_balance float,\n" +
+                        "c_ytd_payment float,\n" +
+                        "c_payment_cnt int,\n" +
+                        "c_delivery_cnt int,\n" +
+                        "c_data string,\n" +
+                        "PRIMARY KEY(c_w_id, c_d_id, c_id)\n" +
+                        ");");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Could not close statement", e);
