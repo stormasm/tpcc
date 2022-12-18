@@ -227,11 +227,27 @@ public class TpccLoad implements TpccConstants {
             }
             try {
                 stmt.execute("SET FOREIGN_KEY_CHECKS=0");
-                stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Could not set foreign key checks error", e);
             }
 
+            try {
+                stmt.execute("create table item (\n" +
+                        "i_id int PRIMARY KEY,\n" +
+                        "i_im_id int,\n" +
+                        "i_name string,\n" +
+                        "i_price float,\n" +
+                        "i_data string\n" +
+                        ");");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not close statement", e);
+            }
             loadConfig.setLoadType(TpccLoadConfig.LoadType.JDBC_STATEMENT);
             loadConfig.setConn(conn);
         } else {
