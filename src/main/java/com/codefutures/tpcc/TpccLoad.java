@@ -351,6 +351,51 @@ public class TpccLoad implements TpccConstants {
             }
 
             try {
+                stmt.execute("create table order_line (\n" +
+                        "ol_o_id int,\n" +
+                        "ol_d_id int,\n" +
+                        "ol_w_id int,\n" +
+                        "ol_number int,\n" +
+                        "ol_i_id int,\n" +
+                        "ol_supply_w_id int,\n" +
+                        "ol_delivery_d timestamp,\n" +
+                        "ol_quantity int,\n" +
+                        "ol_amount float,\n" +
+                        "ol_dist_info varchar,\n" +
+                        "PRIMARY KEY(ol_w_id, ol_d_id, ol_o_id, ol_number)\n" +
+                        ");\n");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.execute("create table orders (\n" +
+                        "o_id int, \n" +
+                        "o_d_id int, \n" +
+                        "o_w_id int,\n" +
+                        "o_c_id int,\n" +
+                        "o_entry_d timestamp,\n" +
+                        "o_carrier_id int,\n" +
+                        "o_ol_cnt int, \n" +
+                        "o_all_local int,\n" +
+                        "PRIMARY KEY(o_w_id, o_d_id, o_id) \n" +
+                        ")");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
+                stmt.execute("create table new_orders (\n" +
+                        "no_o_id int,\n" +
+                        "no_d_id int,\n" +
+                        "no_w_id int,\n" +
+                        "PRIMARY KEY(no_w_id, no_d_id, no_o_id)\n" +
+                        ");\n");
+            } catch (SQLException e) {
+                throw new RuntimeException("Could not create items table", e);
+            }
+
+            try {
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Could not close statement", e);
