@@ -80,7 +80,7 @@ public class TpccStatements {
         if (sql.startsWith("SELECT")) {
             return conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         } else {
-            return conn.prepareStatement(sql, PreparedStatement.NO_GENERATED_KEYS);
+            return conn.prepareStatement(sql);//, PreparedStatement.NO_GENERATED_KEYS);
         }
     }
 
