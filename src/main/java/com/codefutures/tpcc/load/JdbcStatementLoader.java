@@ -1,14 +1,22 @@
 package com.codefutures.tpcc.load;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Timer;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static com.codefutures.tpcc.Util.metrics;
+
 /**
  * Copyright (C) 2011 CodeFutures Corporation. All rights reserved.
  */
 public class JdbcStatementLoader implements RecordLoader {
+
+    private final Timer executionTime = metrics.timer(name(JdbcStatementLoader.class, "executionTime"));
 
     Connection conn;
 
@@ -67,7 +75,9 @@ public class JdbcStatementLoader implements RecordLoader {
         final String sql = b.toString();
         b.setLength(0);
         try {
-            stmt.execute(sql);
+            try(final Timer.Context context = executionTime.time()) {
+                stmt.execute(sql);
+            } // catch and final logic goes here
         } catch (SQLException e) {
             throw new RuntimeException("Error loading into table '" + tableName + "' with SQL: " + sql, e);
         }

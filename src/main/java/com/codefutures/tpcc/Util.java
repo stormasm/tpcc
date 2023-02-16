@@ -1,8 +1,12 @@
 package com.codefutures.tpcc;
 
+import com.codahale.metrics.MetricRegistry;
+
 import java.util.Random;
 
 public class Util implements TpccConstants {
+
+    public static final MetricRegistry metrics = new MetricRegistry();
 
     //Weight Variables
     static int no;

@@ -7,9 +7,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.ConsoleReporter;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+
+import static com.codefutures.tpcc.Util.metrics;
 
 
 public class TpccLoad implements TpccConstants {
@@ -471,6 +475,11 @@ public class TpccLoad implements TpccConstants {
                         + df1.format(seconds) + " second(s) ("
                         + df2.format(durationSeconds / 60.0f) + " minutes)"
         );
+        ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build();
+        reporter.report();
 
         return 0;
     }
