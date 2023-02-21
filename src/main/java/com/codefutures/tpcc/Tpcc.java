@@ -9,9 +9,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.ConsoleReporter;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+
+import static com.codefutures.tpcc.Util.metrics;
 
 public class Tpcc implements TpccConstants {
 
@@ -464,6 +467,11 @@ public class Tpcc implements TpccConstants {
 
         }
 
+        ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .build();
+        reporter.report();
 
         System.out.println("Terminating process now");
         System.exit(ret);

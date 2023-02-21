@@ -2,10 +2,26 @@ package com.codefutures.tpcc;
 
 import java.sql.*;
 
+import com.codahale.metrics.Timer;
+import com.codefutures.tpcc.load.JdbcStatementLoader;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static com.codefutures.tpcc.Util.metrics;
+
 public class NewOrder implements TpccConstants {
+    private final Timer q0 = metrics.timer(name(JdbcStatementLoader.class, "q0"));
+    private final Timer q1 = metrics.timer(name(JdbcStatementLoader.class, "q1"));
+    private final Timer q2 = metrics.timer(name(JdbcStatementLoader.class, "q2"));
+    private final Timer q3 = metrics.timer(name(JdbcStatementLoader.class, "q3"));
+    private final Timer q4 = metrics.timer(name(JdbcStatementLoader.class, "q4"));
+    private final Timer q5 = metrics.timer(name(JdbcStatementLoader.class, "q5"));
+    private final Timer q6 = metrics.timer(name(JdbcStatementLoader.class, "q6"));
+    private final Timer q7 = metrics.timer(name(JdbcStatementLoader.class, "q7"));
+    private final Timer q8 = metrics.timer(name(JdbcStatementLoader.class, "q8"));
+    private final Timer q35 = metrics.timer(name(JdbcStatementLoader.class, "q35"));
+    private final Timer q36 = metrics.timer(name(JdbcStatementLoader.class, "q36"));
 
     private static final Logger logger = LoggerFactory.getLogger(Driver.class);
     private static final boolean DEBUG = logger.isDebugEnabled();
@@ -148,12 +164,14 @@ public class NewOrder implements TpccConstants {
                     pstmt0.setInt(column++, c_id);
                     if (TRACE)
                         logger.trace("SELECT c_discount, c_last, c_credit, w_tax FROM customer, warehouse WHERE w_id = " + w_id + " AND c_w_id = " + w_id + " AND c_d_id = " + d_id + " AND c_id = " + c_id);
-                    try (ResultSet rs = pstmt0.executeQuery()) {
-                        if (rs.next()) {
-                            c_discount = rs.getFloat(1);
-                            c_last = rs.getString(2);
-                            c_credit = rs.getString(3);
-                            w_tax = rs.getFloat(4);
+                    try(final Timer.Context context = q0.time()) {
+                        try (ResultSet rs = pstmt0.executeQuery()) {
+                            if (rs.next()) {
+                                c_discount = rs.getFloat(1);
+                                c_last = rs.getString(2);
+                                c_credit = rs.getString(3);
+                                w_tax = rs.getFloat(4);
+                            }
                         }
                     }
                 } catch (SQLException e) {
@@ -179,16 +197,20 @@ public class NewOrder implements TpccConstants {
                         logger.trace("SELECT c_discount, c_last, c_credit FROM customer WHERE c_w_id = " + w_id + " AND c_d_id = " + d_id + " AND c_id = " + c_id);
                     if (TRACE)
                         logger.trace("SELECT w_tax FROM warehouse WHERE w_id = " + w_id);
-                    try (ResultSet rs0 = pstmt35.executeQuery()) {
-                        if (rs0.next()) {
-                            c_discount = rs0.getFloat(1);
-                            c_last = rs0.getString(2);
-                            c_credit = rs0.getString(3);
+                    try(final Timer.Context context = q35.time()) {
+                        try (ResultSet rs0 = pstmt35.executeQuery()) {
+                            if (rs0.next()) {
+                                c_discount = rs0.getFloat(1);
+                                c_last = rs0.getString(2);
+                                c_credit = rs0.getString(3);
+                            }
                         }
                     }
-                    try (ResultSet rs1 = pstmt36.executeQuery()) {
-                        if (rs1.next()) {
-                            w_tax = rs1.getFloat(1);
+                    try(final Timer.Context context = q36.time()) {
+                        try (ResultSet rs1 = pstmt36.executeQuery()) {
+                            if (rs1.next()) {
+                                w_tax = rs1.getFloat(1);
+                            }
                         }
                     }
                 } catch (SQLException e) {
@@ -205,13 +227,15 @@ public class NewOrder implements TpccConstants {
                 pstmt1.setInt(2, w_id);
                 if (TRACE)
                     logger.trace("SELECT d_next_o_id, d_tax FROM district WHERE d_id = " + d_id + "  AND d_w_id = " + w_id + " FOR UPDATE");
-                try (ResultSet rs = pstmt1.executeQuery()) {
-                    if (rs.next()) {
-                        d_next_o_id = rs.getInt(1);
-                        d_tax = rs.getFloat(2);
-                    } else {
-                        logger.error("Failed to obtain d_next_o_id. No results to query: "
-                            + "SELECT d_next_o_id, d_tax FROM district WHERE d_id = " + d_id + "  AND d_w_id = " + w_id + " FOR UPDATE");
+                try(final Timer.Context context = q1.time()) {
+                    try (ResultSet rs = pstmt1.executeQuery()) {
+                        if (rs.next()) {
+                            d_next_o_id = rs.getInt(1);
+                            d_tax = rs.getFloat(2);
+                        } else {
+                            logger.error("Failed to obtain d_next_o_id. No results to query: "
+                                    + "SELECT d_next_o_id, d_tax FROM district WHERE d_id = " + d_id + "  AND d_w_id = " + w_id + " FOR UPDATE");
+                        }
                     }
                 }
             } catch (SQLException e) {
@@ -229,9 +253,9 @@ public class NewOrder implements TpccConstants {
                 pstmt2.setInt(3, w_id);
                 if (TRACE)
                     logger.trace("UPDATE district SET d_next_o_id = " + d_next_o_id + " + 1 WHERE d_id = " + d_id + " AND d_w_id = " + w_id);
-                pstmt2.executeUpdate();
-
-
+                try(final Timer.Context context = q2.time()) {
+                    pstmt2.executeUpdate();
+                }
             } catch (SQLException e) {
                 logger.error("UPDATE district SET d_next_o_id = " + d_next_o_id + " + 1 WHERE d_id = " + d_id + " AND d_w_id = " + w_id, e);
                 throw new Exception("NewOrder update transaction error", e);
@@ -254,9 +278,9 @@ public class NewOrder implements TpccConstants {
                 if (TRACE)
                     logger.trace("INSERT INTO orders (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local) " +
                             "VALUES(" + o_id + "," + d_id + "," + w_id + "," + c_id + "," + currentTimeStamp + "," + o_ol_cnt + "," + o_all_local + ")");
-                pstmt3.executeUpdate();
-
-
+                try(final Timer.Context context = q3.time()) {
+                    pstmt3.executeUpdate();
+                }
             } catch (SQLException e) {
                 logger.error("INSERT INTO orders (o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, o_all_local) " +
                         "VALUES(" + o_id + "," + d_id + "," + w_id + "," + c_id + "," + currentTimeStamp + "," + o_ol_cnt + "," + o_all_local + ")", e);
@@ -272,8 +296,9 @@ public class NewOrder implements TpccConstants {
                 pstmt4.setInt(3, w_id);
                 if (TRACE)
                     logger.trace("INSERT INTO new_orders (no_o_id, no_d_id, no_w_id) VALUES (" + o_id + "," + d_id + "," + w_id + ")");
-                pstmt4.executeUpdate();
-
+                try(final Timer.Context context = q4.time()) {
+                    pstmt4.executeUpdate();
+                }
 
             } catch (SQLException e) {
                 logger.error("INSERT INTO new_orders (no_o_id, no_d_id, no_w_id) VALUES (" + o_id + "," + d_id + "," + w_id + ")", e);
@@ -314,16 +339,18 @@ public class NewOrder implements TpccConstants {
                     final PreparedStatement pstmt5 = pStmts.getStatement(5);
                     pstmt5.setInt(1, ol_i_id);
                     if (TRACE) logger.trace("SELECT i_price, i_name, i_data FROM item WHERE i_id =" + ol_i_id);
-                    try (ResultSet rs = pstmt5.executeQuery()) {
-                        if (rs.next()) {
-                            i_price = rs.getFloat(1);
-                            i_name = rs.getString(2);
-                            i_data = rs.getString(3);
-                        } else {
-                            if (DEBUG) {
-                                logger.debug("No item found for item id " + ol_i_id);
+                    try(final Timer.Context context = q5.time()) {
+                        try (ResultSet rs = pstmt5.executeQuery()) {
+                            if (rs.next()) {
+                                i_price = rs.getFloat(1);
+                                i_name = rs.getString(2);
+                                i_data = rs.getString(3);
+                            } else {
+                                if (DEBUG) {
+                                    logger.debug("No item found for item id " + ol_i_id);
+                                }
+                                throw new AbortedTransactionException();
                             }
-                            throw new AbortedTransactionException();
                         }
                     }
                 } catch (SQLException e) {
@@ -344,23 +371,24 @@ public class NewOrder implements TpccConstants {
                         logger.trace("SELECT s_quantity, s_data, s_dist_01, s_dist_02, s_dist_03, s_dist_04, s_dist_05, s_dist_06, s_dist_07, s_dist_08, s_dist_09, s_dist_10 FROM " +
                                 "stock WHERE s_i_id = " + ol_i_id + " AND s_w_id = " + ol_supply_w_id + " FOR UPDATE");
 
-                    try (ResultSet rs = pstmt6.executeQuery()) {
-                        if (rs.next()) {
-                            s_quantity = rs.getInt(1);
-                            s_data = rs.getString(2);
-                            s_dist_01 = rs.getString(3);
-                            s_dist_02 = rs.getString(4);
-                            s_dist_03 = rs.getString(5);
-                            s_dist_04 = rs.getString(6);
-                            s_dist_05 = rs.getString(7);
-                            s_dist_06 = rs.getString(8);
-                            s_dist_07 = rs.getString(9);
-                            s_dist_08 = rs.getString(10);
-                            s_dist_09 = rs.getString(11);
-                            s_dist_10 = rs.getString(12);
+                    try(final Timer.Context context = q6.time()) {
+                        try (ResultSet rs = pstmt6.executeQuery()) {
+                            if (rs.next()) {
+                                s_quantity = rs.getInt(1);
+                                s_data = rs.getString(2);
+                                s_dist_01 = rs.getString(3);
+                                s_dist_02 = rs.getString(4);
+                                s_dist_03 = rs.getString(5);
+                                s_dist_04 = rs.getString(6);
+                                s_dist_05 = rs.getString(7);
+                                s_dist_06 = rs.getString(8);
+                                s_dist_07 = rs.getString(9);
+                                s_dist_08 = rs.getString(10);
+                                s_dist_09 = rs.getString(11);
+                                s_dist_10 = rs.getString(12);
+                            }
                         }
                     }
-
                 } catch (SQLException e) {
                     logger.error("SELECT s_quantity, s_data, s_dist_01, s_dist_02, s_dist_03, s_dist_04, s_dist_05, s_dist_06, s_dist_07, s_dist_08, s_dist_09, s_dist_10 FROM " +
                             "stock WHERE s_i_id = " + ol_i_id + " AND s_w_id = " + ol_supply_w_id + " FOR UPDATE", e);
@@ -394,8 +422,9 @@ public class NewOrder implements TpccConstants {
                     pstmt7.setInt(3, ol_supply_w_id);
                     if (TRACE)
                         logger.trace("UPDATE stock SET s_quantity = " + s_quantity + " WHERE s_i_id = " + ol_i_id + " AND s_w_id = " + ol_supply_w_id);
-                    pstmt7.executeUpdate();
-
+                    try(final Timer.Context context = q7.time()) {
+                        pstmt7.executeUpdate();
+                    }
 
                 } catch (SQLException e) {
                     logger.error("UPDATE stock SET s_quantity = " + s_quantity + " WHERE s_i_id = " + ol_i_id + " AND s_w_id = " + ol_supply_w_id, e);
@@ -424,8 +453,9 @@ public class NewOrder implements TpccConstants {
                         logger.trace("INSERT INTO order_line (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info) " +
                                 "VALUES (" + o_id + "," + d_id + "," + w_id + "," + ol_number + "," + ol_i_id + "," + ol_supply_w_id + "," + ol_quantity + ","
                                 + ol_amount + "," + ol_dist_info + ")");
-                    pstmt8.executeUpdate();
-
+                    try(final Timer.Context context = q8.time()) {
+                        pstmt8.executeUpdate();
+                    }
 
                 } catch (SQLException e) {
                     logger.error("INSERT INTO order_line (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info) " +

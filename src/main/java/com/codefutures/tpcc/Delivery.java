@@ -4,10 +4,23 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.codahale.metrics.Timer;
+import com.codefutures.tpcc.load.JdbcStatementLoader;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static com.codefutures.tpcc.Util.metrics;
+
 public class Delivery implements TpccConstants {
+    private final Timer q25 = metrics.timer(name(JdbcStatementLoader.class, "q25"));
+    private final Timer q26 = metrics.timer(name(JdbcStatementLoader.class, "q26"));
+    private final Timer q27 = metrics.timer(name(JdbcStatementLoader.class, "q27"));
+    private final Timer q28 = metrics.timer(name(JdbcStatementLoader.class, "q28"));
+    private final Timer q29 = metrics.timer(name(JdbcStatementLoader.class, "q29"));
+    private final Timer q30 = metrics.timer(name(JdbcStatementLoader.class, "q30"));
+    private final Timer q31 = metrics.timer(name(JdbcStatementLoader.class, "q31"));
+
     private static final Logger logger = LoggerFactory.getLogger(Driver.class);
     private static final boolean DEBUG = logger.isDebugEnabled();
     private static final boolean TRACE = logger.isTraceEnabled();
@@ -44,13 +57,15 @@ public class Delivery implements TpccConstants {
                 try {
                     pStmts.getStatement(25).setInt(1, d_id);
                     pStmts.getStatement(25).setInt(2, w_id);
-                    ResultSet rs = pStmts.getStatement(25).executeQuery();
+                    try(final Timer.Context context = q25.time()) {
+                        ResultSet rs = pStmts.getStatement(25).executeQuery();
 
-                    if (rs.next()) {
-                        no_o_id = rs.getInt(1);
+                        if (rs.next()) {
+                            no_o_id = rs.getInt(1);
+                        }
+
+                        rs.close();
                     }
-
-                    rs.close();
                 } catch (SQLException e) {
                     logger.error("SELECT COALESCE(MIN(no_o_id),0) FROM new_orders WHERE no_d_id = " + d_id + " AND no_w_id = " + w_id, e);
                     throw new Exception("Delivery Select transaction error", e);
@@ -70,7 +85,9 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(26).setInt(1, no_o_id);
                     pStmts.getStatement(26).setInt(2, d_id);
                     pStmts.getStatement(26).setInt(3, w_id);
-                    pStmts.getStatement(26).executeUpdate();
+                    try(final Timer.Context context = q26.time()) {
+                        pStmts.getStatement(26).executeUpdate();
+                    }
 
 
                 } catch (SQLException e) {
@@ -87,14 +104,15 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(27).setInt(1, no_o_id);
                     pStmts.getStatement(27).setInt(2, d_id);
                     pStmts.getStatement(27).setInt(3, w_id);
-                    ResultSet rs = pStmts.getStatement(27).executeQuery();
+                    try(final Timer.Context context = q27.time()) {
+                        ResultSet rs = pStmts.getStatement(27).executeQuery();
 
-                    if (rs.next()) {
-                        c_id = rs.getInt(1);
+                        if (rs.next()) {
+                            c_id = rs.getInt(1);
+                        }
+
+                        rs.close();
                     }
-
-
-                    rs.close();
                 } catch (SQLException e) {
                     logger.error("SELECT o_c_id FROM orders WHERE o_id = " + no_o_id + " AND o_d_id = " + d_id + " AND o_w_id = " + w_id, e);
                     throw new Exception(" Delivery Select transaction error", e);
@@ -109,7 +127,9 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(28).setInt(2, no_o_id);
                     pStmts.getStatement(28).setInt(3, d_id);
                     pStmts.getStatement(28).setInt(4, w_id);
-                    pStmts.getStatement(28).executeUpdate();
+                    try(final Timer.Context context = q28.time()) {
+                        pStmts.getStatement(28).executeUpdate();
+                    }
 
 
                 } catch (SQLException e) {
@@ -127,7 +147,9 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(29).setInt(2, no_o_id);
                     pStmts.getStatement(29).setInt(3, d_id);
                     pStmts.getStatement(29).setInt(4, w_id);
-                    pStmts.getStatement(29).executeUpdate();
+                    try(final Timer.Context context = q29.time()) {
+                        pStmts.getStatement(29).executeUpdate();
+                    }
 
 
                 } catch (SQLException e) {
@@ -144,13 +166,15 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(30).setInt(1, no_o_id);
                     pStmts.getStatement(30).setInt(2, d_id);
                     pStmts.getStatement(30).setInt(3, w_id);
-                    ResultSet rs = pStmts.getStatement(30).executeQuery();
-                    if (rs.next()) {
-                        ol_total = rs.getFloat(1);
+                    try(final Timer.Context context = q30.time()) {
+                        ResultSet rs = pStmts.getStatement(30).executeQuery();
+                        if (rs.next()) {
+                            ol_total = rs.getFloat(1);
+                        }
+
+
+                        rs.close();
                     }
-
-
-                    rs.close();
                 } catch (SQLException e) {
                     logger.error("SELECT SUM(ol_amount) FROM order_line WHERE ol_o_id = " + no_o_id + " AND ol_d_id = " + d_id + " AND ol_w_id = " + w_id, e);
                     throw new Exception("Delivery Select transaction error", e);
@@ -166,9 +190,9 @@ public class Delivery implements TpccConstants {
                     pStmts.getStatement(31).setInt(2, c_id);
                     pStmts.getStatement(31).setInt(3, d_id);
                     pStmts.getStatement(31).setInt(4, w_id);
-                    pStmts.getStatement(31).executeUpdate();
-
-
+                    try(final Timer.Context context = q31.time()) {
+                        pStmts.getStatement(31).executeUpdate();
+                    }
                 } catch (SQLException e) {
                     logger.error("UPDATE customer SET c_balance = c_balance + " + ol_total + ", c_delivery_cnt = c_delivery_cnt + 1 WHERE c_id = " + c_id + " AND c_d_id = " + d_id + " AND c_w_id = " + w_id, e);
                     throw new Exception("Delivery Update transaction error", e);
