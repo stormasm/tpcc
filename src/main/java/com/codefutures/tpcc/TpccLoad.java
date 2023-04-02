@@ -323,7 +323,7 @@ public class TpccLoad implements TpccConstants {
                         "c_state string,\n" +
                         "c_zip string,\n" +
                         "c_phone string,\n" +
-                        "c_since datetime,\n" +
+                        "c_since timestamp,\n" +
                         "c_credit string,\n" +
                         "c_credit_lim int,\n" +
                         "c_discount float,\n" +
