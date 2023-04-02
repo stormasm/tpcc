@@ -4,6 +4,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Timer;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
@@ -19,8 +20,6 @@ public class JdbcStatementLoader implements RecordLoader {
     private final Timer executionTime = metrics.timer(name(JdbcStatementLoader.class, "executionTime"));
 
     Connection conn;
-
-    Statement stmt;
 
     String tableName;
 
@@ -69,14 +68,13 @@ public class JdbcStatementLoader implements RecordLoader {
     }
 
     private void executeBulkInsert() throws SQLException {
-        if (stmt == null) {
-            stmt = conn.createStatement();
-        }
         final String sql = b.toString();
         b.setLength(0);
         try {
             try(final Timer.Context context = executionTime.time()) {
-                stmt.execute(sql);
+                try(PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.executeUpdate();
+                }
             } // catch and final logic goes here
         } catch (SQLException e) {
             throw new RuntimeException("Error loading into table '" + tableName + "' with SQL: " + sql, e);
@@ -114,7 +112,6 @@ public class JdbcStatementLoader implements RecordLoader {
         if (currentBatchSize > 0) {
             executeBulkInsert();
         }
-        stmt.close();
         if (!conn.getAutoCommit()) {
             conn.commit();
         }
