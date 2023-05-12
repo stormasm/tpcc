@@ -66,6 +66,10 @@ Review the TPC-C settings in `tpcc.properties`, then run this command To run the
 java -classpath target/tpcc-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.codefutures.tpcc.Tpcc
 ```
 
+```
+java --add-opens=java.base/java.nio=ALL-UNNAMED -classpath target/tpcc-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.codefutures.tpcc.Tpcc
+```
+
 Bugs can be reported to support@codefutures.com.
 
 (c) 2014 CodeFutures Corporation.
