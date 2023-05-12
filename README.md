@@ -46,6 +46,10 @@ To run the load process:
 java -classpath target/tpcc-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.codefutures.tpcc.TpccLoad
 ```
 
+```
+java --add-opens=java.base/java.nio=ALL-UNNAMED -classpath target/tpcc-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.codefutures.tpcc.TpccLoad
+```
+
 It is possible to load data into shards where the warehouse ID is used as a shard key. The
 SHARDCOUNT and SHARDID properties must be set correctly when generating or loading data.
 
